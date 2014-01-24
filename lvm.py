@@ -83,6 +83,29 @@ class Lvm:
             return None
         return snapshot_name
         
+    def lvremove_snapshot(self, lv_path):
+        """remove a snapshot
+        
+        return lv_path or None
+        """
+        call = ['/sbin/lvremove', '--force', lv_path]
+        
+        proc = subprocess.Popen(call, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        out, err = proc.communicate()
+        returncode = proc.returncode
+        
+        if err:
+            print err
+            #~ sys.exit(1)
+        
+        if returncode != 0:
+            return None
+        return lv_path
+        
+        
 lvm = Lvm()
-print lvm.vgdisplay("test-vg")
-lvm.lvcreate_snapshot('/dev/test-vg', 'test-lv', '5M')
+print lvm.vgdisplay("test-vg")['vg_current_lv']
+name = lvm.lvcreate_snapshot('/dev/test-vg', 'test-lv', '500M')
+print lvm.vgdisplay("test-vg")['vg_current_lv']
+lvm.lvremove_snapshot(os.path.join('/dev/test-vg', name))
+print lvm.vgdisplay("test-vg")['vg_current_lv']
