@@ -1,6 +1,8 @@
 import sys
 import os
 import subprocess
+import time
+
 
 class Lvm:
     """Wrap LVM programs."""
@@ -32,7 +34,8 @@ class Lvm:
         out, err = proc.communicate()
         
         if err:
-            sys.exit(1)
+            print err
+            #~ sys.exit(1)
             
         out_list = out.rstrip().split(':')
 
@@ -58,6 +61,28 @@ class Lvm:
 
         return vginfo
         
+    def lvcreate_snapshot(self, vg_path, lv_name, size):
+        """Create a snapshot of a logical volume
+        
+        return snapshot_name or None
+        """
+        timestamp = str(int(time.time()))
+        lv_path = os.path.join(vg_path, lv_name)
+        snapshot_name = '{0}--snapshot-{1}'.format(lv_name, timestamp)
+
+        call = ['/sbin/lvcreate', '--size', size, '--snapshot', '--name', snapshot_name, lv_path]
+        proc = subprocess.Popen(call, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        out, err = proc.communicate()
+        returncode = proc.returncode
+        
+        if err:
+            print err
+            #~ sys.exit(1)
+        
+        if returncode != 0:
+            return None
+        return snapshot_name
         
 lvm = Lvm()
 print lvm.vgdisplay("test-vg")
+lvm.lvcreate_snapshot('/dev/test-vg', 'test-lv', '5M')
