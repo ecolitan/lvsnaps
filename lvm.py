@@ -102,6 +102,36 @@ class Lvm:
             return None
         return lv_path
         
+    def lvdisplay(self, lv_path):
+        """"""
+        
+        call = ['/sbin/lvdisplay', '-c', lv_path]
+        proc = subprocess.Popen(call, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        out, err = proc.communicate()
+        
+        if err:
+            print err
+            #~ sys.exit(1)
+            
+        out_list = out.rstrip().split(':')
+        
+        lvinfo = {
+            'lv_name': out_list[0],
+            'vg_name': out_list[1],
+            'lv_access': out_list[2],
+            'lv_status': out_list[3],
+            'lv_num': out_list[4],
+            'lv_open': out_list[5],
+            'lv_sectors': out_list[6],
+            'lv_cur_extent': out_list[7],
+            'lv_alloc_extent': out_list[8],
+            'lv_alloc_pol': out_list[9],
+            'lv_r_sector': out_list[10],
+            'lv_maj': out_list[11],
+            'lv_min': out_list[12],
+        }
+        
+        return lvinfo
         
 lvm = Lvm()
 print lvm.vgdisplay("test-vg")['vg_current_lv']
