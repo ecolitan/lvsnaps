@@ -27,11 +27,12 @@ class Lvm:
         16 vg_free_extents  free number of physical extents for this volume group
         17 vg_uuid          uuid of volume group
         
-        Return dict of vgdisplay information
+        Return dict of vgdisplay information or None
         """
         call = ['/sbin/vgdisplay', '-c', vg_name]
         proc = subprocess.Popen(call, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         out, err = proc.communicate()
+        returncode = proc.returncode
         
         if err:
             print err
@@ -59,6 +60,8 @@ class Lvm:
             'vg_uuid':          out_list[16]
         }
 
+        if returncode != 0:
+            return None
         return vginfo
         
     def lvcreate_snapshot(self, vg_path, lv_name, size):
@@ -103,11 +106,12 @@ class Lvm:
         return lv_path
         
     def lvdisplay(self, lv_path):
-        """"""
+        """return None or lvinfo dict"""
         
         call = ['/sbin/lvdisplay', '-c', lv_path]
         proc = subprocess.Popen(call, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         out, err = proc.communicate()
+        returncode = proc.returncode
         
         if err:
             print err
@@ -131,6 +135,8 @@ class Lvm:
             'lv_min': out_list[12],
         }
         
+        if returncode != 0:
+            return None
         return lvinfo
         
 lvm = Lvm()
